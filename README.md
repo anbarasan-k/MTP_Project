@@ -37,3 +37,11 @@ Output folder will contain the following files
 Vulnerability Model- Vulnerable parameters for XSS and SQL Injection.
 Output.html- Detailed HTML report of SQLI and XSS Testing of web application.
 Summary.html- Summary report of SQLI and XSS Testing of web application.
+
+Files and Folders in the Repository
+
+Source_Code - Source of the Security Testing Framework.
+Thesis_Latex_Code - Latex source code of the Thesis Report.
+Presentation_Latex_Code - Latex source code of the Presentation.
+Thesis.pdf - Dissertation Report of the MTP
+Presentation.pdf - Presentation of the MTP
