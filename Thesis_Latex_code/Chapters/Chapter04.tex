@@ -1,0 +1,18 @@
+
+\chapter{WEB APPLICATION SECURITY VULNERABILITIES}
+
+In this chapter, we provide an overview of the most prevalent security vulnerabilities(among top 10 vulnerabilities) in web applications.[8]
+
+\section{XSS-Cross Site Scripting}
+Cross-Site Scripting or XSS[6] is one of the most prevelant security attacks in the world.Cross Site scripting or XSS attack targets end-users. User input fields such as form field, url parameter, cookie are vulnerable to XSS attacks. The fields are  used by the server to produce responses. An attacker can inject malicious data using a script, usually written in JavaScript, which will be executed by an end-user browser through the input fields in web applications. If the input fields are not validated and sanitized for malicious scripts, then the web applications are vulnerable to attack.  
+
+\subsection{Reflected XSS-Cross Site Scripting}
+In reflected XSS attacks[6], the malicious script is executed immediately and response containing malicious requests is provided to the end-user. This kind of attack is non-persistent and affect the user executing script in fields such as a search box query or the user clicking a link from a malicious URL. Spam emails containing the malicious URL or Javascript can also initiate a Reflected XSS attack. The attack is performed using a single request and response. This attack is possible in web application where the user data inputs are not properly encoded or the special characters used in scripts are not properly filtered.
+
+\subsection{Stored XSS-Cross Site Scripting}
+Stored XSS attack[6] is a kind of attack in which malicious script is injected into the web application database using methods like injecting in a comment box in a forum or posting data using input fields.In stored XSS attacks, the malicious script is saved in the application's database permanently and hence known as persistent XSS attack. This attack affects all the users loading from the database and hence more dangerous than Reflected XSS in terms of scale. When an end user loads the web application containing Stored XSS scripts, if the data from database is not properly sanitized or filtered the javascript is executed in the browser and sensitive information such as session ids are exposed to the attacker.  
+
+
+\section{SQL Injection}
+
+SQL injection or SQLI[6] is an attack that uses malicious SQL code for backend database manipulation to access information that was not intended to be displayed to the normal end user. This database information may include any number of items, including sensitive company data, user lists or user private data.A successful SQLI attack can result in the unauthorized viewing of user lists, the deletion of entire tables in database and, database administrative rights being granted to the end user. An attacker in SQL injection manipulates a standard SQL query to exploit non-validated input(user input fields) vulnerabilities in a database. 

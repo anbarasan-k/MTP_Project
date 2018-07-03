@@ -1,0 +1,53 @@
+\chapter{OUR APPROACH FOR MODELLING \\WEB APPLICATIONS FOR SECURITY TESTING}
+
+In this chapter, we discuss our modelling techniques for assessing security for web applications. Creation of a model of a web application requires traversing all paths from the home page of web application to all links present in the web page. Transitions from a web page happens due to static hyperlinks and dynamic javascript events in a webpage(ex. onclick() events). Model of a web application security testing needs to capture all the elements in a webpage and all transitions possible from the webpage. The following sections illustrate our approach to model the web application.
+
+\section{Document Object Model(DOM) Tree}
+
+The Document Object Model (DOM) is a programming interface(API) for HTML and XML documents. It represents the document structure, style and content of web applications. DOM is represented as nodes and objects in the document. A Web page is a document encoded in HTML(XML). This document is displayed in the browser window as an application. The DOM is an object-oriented representation of the web page, which can be modified in the web applications with JavaScript.In DOM representation, every HTML element is considered as an object. The DOM represents the web page as a tree structure of HTML tags.
+
+An example DOM Tree is given in the below figure.
+
+\begin{figure}[htpb]
+  \begin{center}
+    \resizebox{75mm}{50mm} {\includegraphics {Chapters/DOM.eps}}
+    \caption {Example of DOM Tree}
+  \label{fig:Table}
+  \end{center}
+\end{figure}
+
+\section{Navigation Graph Model}
+
+In Navigation Graph model[5], a graph is built with nodes and edges where each node represents a Web page and each edge represents a link. It is a model built by a Web crawler (or Web spider) program that automatically traverses the Web application's hyperlink structure and retrieves the content of the Web pages. This model considers only static HTML elements such as hyperlinks and ignore all the dynamic elements such as AJAX elements. In this model, each web page url is a different node and if multiple web pages have the same url(dynamic content) this model does not represent the accurate website structure. \\
+\section{Finite State Machine}
+In Finite State Machine, since each node represents a different State of an AJAX web page and each edge between nodes represents a transition performed on a clickable element. In a webpage, each element of the page can became clickable at runtime(dynamic). The home web page is defined as the root or start State and new States are added as the application is crawled. To find the clickable elements in a webpage, the DOM model of the web page is extracted and the clickable elements are obtained. These elements are subjected to click events and then the resulting DOM model is obtained. In case there is a change in DOM, then a new State is created and an edge is added between the States.  This crawling procedure is recursively called to find all possible States.
+
+The below figure illustrates a example web application and its corresponding State machine model.
+
+\section{Example of a web application and its state machine}
+
+The below figure represents the web application http://www.testfire.net/
+
+\begin{figure}[!h]
+ \begin{center}
+    \includegraphics[width=\textwidth]{Chapters/Testfire.eps}} 
+    \caption {A example banking web application}
+  \label{fig:Table}
+ \end{center}
+\end{figure}
+
+\subsection{Crawl Level 1}
+
+The below figure is a state machine model for web application http://www.testfire.net/ with crawl level 1. 
+
+\begin{figure}[!h]
+ \begin{center}
+        \includegraphics[width=\textwidth]{Chapters/Crawl1.eps}}} 
+    \caption {State Machine Model for Crawl Level 1}
+  \label{fig:Table}
+ \end{center}
+\end{figure}
+
+\newpage
+\section{Choice of the approach used in the dissertation}
+Since the model web applications are AJAX based and dynamic in nature, the Finite State Machine Model is better than navigation graph with each node representing the State of DOM. Crawljax is selected as the the crawling tool for modelling web applications. 

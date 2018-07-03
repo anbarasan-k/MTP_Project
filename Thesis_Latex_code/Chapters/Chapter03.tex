@@ -1,0 +1,20 @@
+\chapter{LITERATURE SURVEY}
+
+In this chapter, we give a brief overview of the existing tools for web testing.
+
+\section{WebMate: A Tool for Testing Web 2.0 Applications}
+
+Webmate[1] is a functional testing tool for Web 2.0 applications. Webmate automatically crawls through the Web applications performing regular application testing as well as cross browser compatibility testing. The input to the webmate tool is the url of the website to test and it creates a usage model by crawling and triggering user actions with a javascript event handler. This usage model is extracted and different browsers and the model is compared with a reference model to capture cross-browser compatibility issues. Webmate also checks for HTML and CSS for browser specific issues. Results of the tests are reported back to the tester. Webmate approach as opposed to manual testing generates testcases automatically for functional testing of web applications. 
+
+\section{Search-based security testing of web applications}
+
+Biofuzz[3], search-based security testing tool proposes a blackbox testing technique to inject malicious SQL data to detect SQL Injection vulnerabilities. It injects malicious SQL query in form inputs and based on the feedback of SQL query it detects whether the attack is successful. It identifies target input parameters such as form input fields, and generate form inputs to ther server. The tool Biofuzz, is bound to MYSQL database and PHP as server. Biofuzz tool finds all the input fields with a crawler to detect input fields vulnerable to SQL attacks. It uses evolutionary algorithms to mutate the SQL inputs to test all possible combinations of SQL queries. 
+
+
+\section{Crawling AJAX-Based Web Applications through Dynamic Analysis}
+Crawling AJAX is more difficult than classical multi-page web applications. In Multi-page web appliations, each page has a unique URL assigned to them but with AJAX pages are dynamic which multiple content can be assigned to same URL. Extraction of hyperlinks and creating a model does not accurately represent the architecture of web applications. Instead of hyperlinks javascript handle can be used to navigate the application and create a model. The web applications are dynamically represented through the Document Object Model(DOM). The User Interface changes are accurately represented by DOM changes instead of URL changes[4,5].
+
+
+\section{Issues with existing tools}
+
+Webmate is model based testing tool only for functionality testing of web applications. The security testing feature is not offered. MBVT Tool is a model based vulnerability testing tool but it requires functional specification of web applications for its model and realizing a functional specification for web applications is not feasible because of web application being regularly patched.

@@ -1,0 +1,609 @@
+\documentclass[11pt,a4paper]{report}
+%\usepackage[linesnumbered,boxed]{algorithm2e}
+\usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage[top=22mm, bottom=22mm, left=30mm, right=20mm]{geometry}
+%\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\newcommand{\reminder}[1]{{\color{red}{[[**#1**]]}}}
+\newcommand{\eat}[1]{}
+\newcommand{\smalltt}[1]{{\small{\texttt{#1}}}}
+
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+\headsep=0.25in
+
+\begin{document}
+
+\begin{titlepage}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}} 
+\center  
+\textsc{\LARGE{\textbf{Indian Institute of Technology Bombay}} }\\[1.5cm]
+\textsc{\Large Computer Scince Engineering Department}\\[1cm] 
+%\textsc{\large CS631 Implementation Techniques for Relational Database Systems}\\[1cm] 
+\HRule \\[0.5cm]
+{ \huge \bfseries Security Analysis in Multilevel Database}\\[0.5cm] 
+\HRule \\[1.5cm]
+\begin{minipage}{1\textwidth}
+\begin{center}
+
+\Large{{\textbf{Aniket Kuiri [163050059]}}}\\
+
+\end{center}
+\end{minipage}\\[5cm]
+{\large \today}\\[2cm]
+\end{titlepage}
+\newpage
+\tableofcontents
+\newpage
+\begin{minipage}{1 \textwidth}
+{ \huge \bfseries Acknowledgements}\\[0.5cm] 
+I would sincerely thank my guide \textbf{Prof. R. K. Shyamasundar} for providing me valuable time and guide throughout this project. I would also sincerely like to thank my senior, \textbf{Pratiksha Chaudhary}, who has worked in this project and provided me valuable information.
+\end{minipage}
+\begin{abstract}
+ Databases are currently used in almost all fields. Hence security is a major concern for databases. Classical postgreSQL uses only Discretionary Access Control that is vulnerable to data leaks and attacks. To ensure better confidentiality and integrity we need better security features in PostgreSQL and multilevel databases need to be used. Here we propose the implementation of RWFM model\cite{Someone2002} on multilevel databases for security. RWFM model follows a novel purpose-based policy model in order to realize information control in databases. RWFM model incorporates proper sanitization process. Moreover the classification of information can be changed securely. 
+\end{abstract}
+
+ \chapter{Introduction}
+Database systems are used to store and retrieve data efficiently. Most databases store data that contain vital information. Leak of these information to others who must not get them is undesirable. Malicious activities can be done by intended people on getting sensitive data. 
+The desired degree of secrecy about any information is known as its sensitivity. So security is of utmost importance in databases. In most scenarios security is employed on the application level that uses the database. But there are some problems in this approach such as :
+\begin{itemize}
+	\item if a malicious person can bypass the application level security then he gets to all information directly from the database. 
+	\item Application handles lots of things like handling multiple connections at the same time, accepting request from the clients, synchronization, concurrency, etc. Adding the security checks in the application level will add overhead which is time consuming. Performing security checks in database level is beneficial as at the same time application level can focus on other things thus saving time. \\
+\end{itemize}
+Most databases contain information that are sensitive to some users but not to others. So some users must get whole of the data in the database and some must not get any information or part of information. The part of information must not be sensitive enough to be disclosed to the user.  Here comes the notion of Multilevel Database. Formally Multilevel Databases are Databases that contain objects with different levels of confidentiality and register subjects with different abilities. This means objects are given labels in the database and subjects have some clearance labels to access them. Let there be four classification levels for objects and subjects based on ascending order of confidentiality :
+\begin{itemize}
+\item Unclassified 
+\item Confidential
+\item Secret
+\item Top Secret
+\end{itemize}
+  
+So if an object is classified as Secret it should not be accessed by a subject with clearance level Unclassified or Confidential. This is an example of how security is implemented in multilevel databases. 
+
+\chapter{Motivation}
+In this chapter few scenarios have been explained in details that tell us the importance of security in database systems 
+and especially in multilevel database systems. The scenarios are listed below : 
+
+\section{Scenario 1 : Military Database}
+Data stored in military databases are extremely important and requires utmost security. Any leak of important data can compromise the security of a country. A military database may contain lots of information 
+\begin{itemize}
+    \item personal details of the officers and soldiers
+    \item Location of army bases
+    \item Artillery and other weapons available in a particular army base
+    \item Undergoing operations by the army
+    \item Expenditure in weapons, food, transportation, etc.
+\end{itemize}
+All of the above information are very sensitive in the following way : 
+\begin{itemize}
+    \item Disclosure of phone numbers of few army personnel at a time is not so sensitive but giving information of phone numbers of many personnel is sensitive as it may lead to tracking of base location  or approximation of base location based on the initial codes of the phone numbers.
+    \item Sometimes it is required to disclose the location of base camp to some person. But giving information of exact location is too risky. In these cases a concept called sanitization is employed which we will discuss in details later. In this case only approximated location are given and not the exact one.
+    \item It is necessary to give information about the types of artillery and weapons present to someone but giving information of total number of artillery and ammunition is not desirable. It is because any information leak to enemies about the quantity is not good strategically. In  terms of database use of aggregate functions is this case is not desirable.
+    \item Similarly information about total expenditure in weapons is also sensitive. Also minute details about date and time of undergoing operations should not to disclosed to anyone other than army personnel as they are highly sensitive data. 
+\end{itemize}
+
+Thus we can say that military database contains data of varying sensitivity which needs to be disclosed according to the levels of users. Hence multilevel database security here is desirable.
+
+
+
+\section{Scenario 2 : Employee Management System }
+Database of employees in an organization contains information as personal details of all employees like name, age, employee ID, address, phone number, etc. 
+Also it contains details like salary of each employee, tax paid, etc. There can be other details as performance of each employee weekly or monthly,updated details of work done, etc. It can be easily understood that an employee would like to keep his personal details to himself or to be disclosed only to few persons in the organization with higher authority and not to peers or someone with lower authority. This includes salary of the employees as well. A manager would like to view the performance matrix of each subordinate and an employee would expect that his performance grade is not disclosed to his peers and not to anyone else other than manager or above. Through this we can conclude that there are various levels of data present in the employee database whose access should be restricted according to the conditions mentioned. Thus each employee of the organization must get a clearance level based on which the employee can access the data concerned to his/her work in the organization. 
+
+
+\section{Scenario 3 : Medical Data }
+Medical data of a person contains information of all diseases and diagnosis previously. It also contains information about name of hospitals where diagnosis and treatment had been done and also the name of doctors who treated. These information are essential for a doctor who is currently diagnosing a patient with a disease. The patient would like that his treatment should not be known to others. So a nurse assisting the doctor in treatment must not know the identity of the person being treated. This is same for any other common people who must not know the person's identity. On the other hand the insurance agent of the patient must know all the details of medical record of the person in order to realize whether insurance should be given to the person or not. In addition to that the insurance agent must get the details of expenses incurred on the person on previous treatment. The expenses data must not be accessible to the doctor currently treating the patient. Organizations including the insurance companies often want statistics of diseases and their treatment, expenses,etc for different purposes. They also must not know the identity of each person. In database term they must have access to only aggregate data. \textbf{Note}: this is just opposite to the military database where aggregate data is forbidden in some cases. But here personal data must be forbidden and not the aggregate one. Thus we can understand very easily that doctor must have a separate access class, the insurance company must have a separate access class, nurses must have separate access class and organizations taking statistics must have separate access class. Hence multilevel database is required. Also one must not get access to data higher than their clearance level and so the importance of security.    
+
+\newpage
+\section{Scenario 4 : Transportation System}
+Here let us consider flight management system. A flight management system can contain information as arrival and departure of all flights, source and destination of each flight, refuelling stations for each plane, total passengers in the plane, total payload. Also it contains details of each passenger including name, age, address, nationality, etc. Here are some of the aspects of security: 
+\begin{itemize}
+    \item Destinations of some of the flights must not be disclosed to others owing to national security in some cases.
+    \item Refuelling stations must also be not disclosed as it can give very important information to hijackers about date and time to hijack.
+    \item Disclosing nationality of all passengers can also lead to serious issues as malicious people may intend to target certain groups of people based on community or nationality.
+\end{itemize}
+Also we will discuss here about how low level data can be combined together to infer higher level data with a simple example. Let there be 3 tables present in Flight Database :
+\begin{itemize}
+\item FLIGHTS(FLIGHT\#,DATE,DEST,WEIGHT)
+\item ITEM(ITEM\#,ITEMNAME,WEIGHT)
+\item PAYLOAD(FLIGHT\#,ITEM\#,QTY,WEIGHT)
+\end{itemize}
+To derive PAYLOAD.WEIGHT let the query be\\[2em] 
+PAYLOAD.WEIGHT := ITEM.WEIGHT * PAYLOAD.QTY where ITEM.ITEM\#=PAYLOAD.ITEM\#; \\[2em]
+
+Let PAYLOAD.WEIGHT be classified as Top-secret and ITEM.ITEM\#, PAYLOAD.QTY, ITEM.WEIGHT and PAYLOAD.ITEM\# be classified as secret. So a user with classification level SECRET must not get any information about PAYLOAD.WEIGHT. But here we can see that the person can easily derive PAYLOAD.WEIGHT as other tuples are classified as SECRET. Thus there is information leak by combining two or more data. 
+\chapter{Literature Survey and Implementation}
+A lot of work has been done on database security. Here I would mention about two specific models based on the following two papers : 
+\begin{itemize}
+    \item Extending Relational Database Systems to automatically enforce privacy policies~\cite{Someone2000}.
+    
+    \item Views for Multilevel Database Security~\cite{Someone2001}
+\end{itemize}
+
+
+
+\section{Extending Relational Database Systems to automatically enforce privacy policies}
+This paper mentions about privacy in single level database i.e., the data have no labels assigned to them. It mainly focuses on the privacy of personal data present in the database of a user or a group of users. The main concept is to Implement fine grained access control policies(FGAC). 
+
+The main features of Fine Grained Access Control(FGAC) implementation are : 
+    \begin{itemize}
+        \item The implementation must solve all the problems within the database itself without the concern of the application using it.
+        \item All the users of the database must be covered in the implementation.
+        \item Implementation of FGAC policies is an overhead so the complexity and maintenance must be minimal.
+        \item It must have the ability to control access to rows, columns and cells in the database as desired.
+    \end{itemize}
+
+\subsection{Implementation}
+Here each user of a database is considered as a role. A role is created in the database as : \\[2em]
+   \textbf{ CREATE ROLE $<$role-name$>$;}\\[2em] 
+A role is generally created by the admin of the database. 
+As the users(roles) and data have no labels defined so the FGAC policies are defined for each role. Here roles and users would be used interchangeably. The queries a user can use in a database are insert, update, select, delete , etc. So restriction needs to be imposed on the users as desired , i.e, some role can have insert option for certain columns in the database , while some role can have select option for certain columns, and so on. 
+Suppose a table is created by the admin of the database. The admin then creates the roles that can access the database using CREATE ROLE statement. Initially none of the roles can access the database. The admin grants access to the database with the restrictions as desired. Column level, row level and cell level restrictions can be imposed by the following manner : 
+\begin{itemize}
+    \item \textbf{COLUMN RESTRICTION :}  “GRANT” and "REVOKE" statements are used to get the desired column level restriction for each role. Example :\\ \textbf{grant select (user\textunderscore name, u\textunderscore id, g \textunderscore id, name) on table1 to alice;}\\
+    This means that role(user) has access to only user\textunderscore name, u\textunderscore id, g\textunderscore id and 
+    name columns of the database table1. The table can have more columns apart from the but user alice cannot access them using.
+    \item \textbf{ROW LEVEL RESTRICTION :} row level restriction is ensured using “CREATE POLICY “ statement in PostGres. Some conditions are enforced in CREATE POLICY statements for a database. The conditions are checked while accessing a tuple from the database. If the conditions are satisfied the tuple can be accessed else cannot. In this way it ensures row level restriction. \\Example : \textbf{create policy usermod on table2 for update using (current \textunderscore user=u \textunderscore name) with check (current \textunderscore user=u\textunderscore name);}\\ So using the above policy one can only access those tuples in the database where user name is same as the name of the role. Before writing a row-level restriction one must ensure row-level security is enabled using the statement as :\\ 
+    \textbf{ALTER TABLE $<$table-name$>$ ENABLE ROW LEVEL SECURITY;}
+
+    \item \textbf{CELL LEVEL RESTRICTION :} To ensure cell level restriction both the implementation of column level and row level restrictions are combined. A column from a tuple ( i.e, a cell of the database ) can be accessed only when  access to the column is given to a role by the admin and when the row level condition is also ensured at the same time.
+    
+\end{itemize}
+
+The above implementation can also be done with views where views are created for each role in the database and assigned respectively. Implementing views is fair enough only if the number of users are less but it becomes very complex when number of users are large as each data may be accessed by a number of users. Some of the problems that arises when using views are : 
+\begin{itemize}
+    \item If the granularity or number of restrictions is high view definitions becomes very complex in order to accommodate all restrictions. It also makes maintenance of views difficult.
+    \item Views as known are logical constructs imposed on database tables. So it is quiet possible that one might bypass the view and have direct access to underlying table.
+\end{itemize}
+
+\newpage
+\section{Views for Multilevel Database Security}
+This paper mainly focuses on the use of views for enforcing privacy in database. It also takes into consideration of multilevel databases where each data object and each user of the database has levels assigned. Based on the levels of each user access to data objects is determined by comparing the users label with the label of the data object.  Initially views for the desired database are created for each of the users classification and corresponding access rights are given as desired. Access rights refers to reading(using select statement), writing(insert statement), updating(update statement), etc. \\
+The basic structure of view creation is :\\ 
+\textbf{CREATE VIEW $<$view-name$>$ AS SELECT $<$column-name1$>$ $<$column-name2$>$..... FROM $<$table-name$>$ WHERE $<$condition1$>$ $<$condition2$>$....}\\
+
+From the names of the select clause we select the columns of the table and from the where condition we filter the tuples for the view. Once the view is created using the above statement GRANT and REVOKE statements are used to give rights for read, write, update as desired to the users. \\
+
+As already mentioned views are logical constructs imposed on the database table. So if a role has rights on changing or adding a data object in the database on a view the same change or addition is reflected on the main table automatically. 
+
+\subsection{Ensuring Confidentiality and Integrity through labels}
+Before going into understanding and implementation of the above paper let us understand how basic security works. We will mainly focus on confidentiality and integrity . \\
+Confidentiality : protecting the information from disclosure to unauthorized parties. \\
+Integrity :  protecting information from being modified by unauthorized parties.\\
+We will describe Bell-LaPadula model and Biba model to understand how confidentiality and Integrity are achieved in Data Security. These can be applied in Database as well.\\  
+\subsubsection{Bell-La Padula Model}
+To achieve confidentiality the subjects(users) and objects(data) are assigned levels. The levels assignment for objects is termed as security classification and the same for subjects is termed as assigning clearance levels. Now based on them Bell-La Padula model follows transition from one state to another to denote security. The properties of Bell-LaPadula model are : 
+\begin{itemize}
+    \item No read up. Thus a subject s can read an object o only if L(s) $\geq$ L(o), where L(o) is the classification level of a object o and L(s) is the clearance level of subject s.
+    \item No write down. A subject s can write an object o only if L(s) $\leq$ L(o), where L(o) is the classification level of a object o and L(s) is the clearance level of subject s.
+    \item Discretionary Access Control : Every access should be constrained by Discretionary Access Control as well. 
+\end{itemize}
+\newpage
+\subsubsection{Biba Model}
+Biba model is based on confidentiality. the main properties of Biba model are : 
+\begin{itemize}
+    \item No write up. A subject s can write an object o only if L(s) $\geq$ L(o), where L(o) is the classification level of a object o and L(s) is the clearance level of subject s.
+    \item No read down. A subject s can read an object o only if L(s) $\leq$ L(o), where L(o) is the classification level of a object o and L(s) is the clearance level of subject s.
+\end{itemize}
+
+The above examples demonstrate how data security is done by classification of subjects and objects into levels. Classification is used in the View model of security mentioned in the paper. And it is with this classification of data we achieve a multilevel database owing to the fact that now each data in the database and subject using the database has classification levels assigned. \\ 
+
+\subsection{Implementation of Views}
+Let us illustrate the implementation in details with an example of Census database system : \\
+Census\textunderscore details(SL. NO., Family No., Last name, First name, Maiden name, Place of birth, Date of Birth, Religion,house no., Street, City, State, Education, Job, Salary);
+The users of the database and their roles are : 
+\begin{itemize}
+    \item Government body G1 to count population based on addresses.
+    \item Government body G2 to count literacy rate. 
+    \item Government body G3 to identify correctness of data given by people through voter ID list,etc.
+    \item People P1 to see their own data.
+    \item Organizations O1 where data is served in the field of education, business, research, etc.
+\end{itemize}
+Let us see few constraints in accessing data . 
+\begin{itemize}
+    \item G2 should not have access to columns Family No., Last name, First name, Maiden name, Street, City, State as these columns combined can help in identifying a person. In fact taking values of last name and place of birth can give an approximation of identifying a person to a lot extent.
+    \item P1 can see all of the data where family member matches with.
+    \item G3 should get all of the data from the whole database.
+    \item O1 should get only those columns related to them and except first name,  family no., maiden no. Also last name and place of birth or address(street, city,state) should not be given together.
+\end{itemize}  
+\newpage
+Let us define the classes on the columns in decreasing order of confidentiality. 
+\begin{itemize}
+    \item Class1 for name, family no., maiden name, house no., (street,city,state) combined, (last name + address), (last name+ place of birth), (last name + job), (job + salary).
+    \item Next class Class2 for last name, street, City, State, job, Family No.
+    \item Class3 for religion and Place of birth
+    \item Class4 for SL.No., salary.
+\end{itemize}
+Each user or subject can access corresponding to their clearance level.
+Thus G1 must have clearance level only upto class 3. G3 must have a clearance level of class1 as it needs all data. P1 also needs a clearance level of class1 with condition that it cannot access data with family no. different for him. Thus separate views needs to be created for each of them. G1 must have a view of  
+(Sl. No., city,state), G2 can have a view of (Sl.No, date of birth, education, salary). P1 must have an access to all but with Row level security according to the condition mentioned above. Row level security has been discussed in the previous section. After creating the views grant access is given to the users as desired. It should be noted here that there should be no view with last name, job together or (job + salary) together or any other combined attributes mentioned in class2 as it would help in deriving class 1 data. Creating views with not the combinations mentioned makes them being in separate classes thus fulfilling our objective. 
+
+\chapter{RWFM Model}
+
+\section{Limitations of the previous models}
+The previous 2 models, FGAC model and the view model, have some major drawbacks. Even though using theses models can help in preventing direct access to a higher - level data still low-level users can infer them indirectly. Inference of higher level data may be achieved by combining 2 or more low-level data. Lets understand it first with a general illustration. \\
+
+General Example : 
+\begin{itemize}
+    \item Let there be 3 users (roles) named A, B and C of a particular database named DB. Let us assume the following constraints.
+    \item Let A can access certain data in DB.
+    \item Let B has the access to certain data that A has from DB.
+    \item Let C can access certain data from DB that is different from data accessed by A.
+    \item Also let B can access certain portion of data that C has from DB.
+    \item A does not have data that C has and vice-versa. On the other hand B has some data both from A and C. 
+    \item It can happen that C can combine the data from A and C to infer about a higher level data that A, B and C should not get. We could prevent A and C from getting the higher level data but not B. This is undesirable. 
+\end{itemize}
+
+
+
+\subsection{Other Limitations}
+\begin{itemize}
+\item Covert Channels : Some information may be leaked indirectly through covert channels.
+\item Sanitization may not be done properly. More about sanitization is discussed later in section. 
+\end{itemize}
+
+\newpage
+\section{Readers - Writers Flow Model - introduction}
+RWFM(Readers Writers Flow Model) model can overcome the drawbacks of the previous implementations . Following are the basic points of RWFM model : \begin{itemize}
+    \item Each role(user) is classified as a \textbf{subject}.
+    \item Each unit of data is classified as an \textbf{object}.
+    \item Each subject or object is defined by a triplet (owner,permissible readers, permissible writers or influencers ).
+    \item Access rules : 
+    \begin{enumerate}
+        \item A subject is granted access rules on an object o iff \\  
+        s $\epsilon$  R(o) $\wedge$ R(o) $\supseteq$ R(s) $\wedge$ W(o) $\subseteq$ W(s) 
+        \item  A subject s can inﬂuence, that is, write to an object o iﬀ \\
+        s $\epsilon$ W(o) $\wedge$ R(s) $\supseteq$ R(o) $\wedge$ W(s) $\subseteq$ W(o) 
+        
+    \end{enumerate}
+    \item Each object created by a subject has RWFM labels equal to that of the subject.
+    \item  Labels on the objects can also be upgraded and downgraded
+\end{itemize}
+Let us see how the information leak mentioned before in section 4.1 is resolved here. Considering the RWFM model A has C in its reader set and B also has C in its reader set. Here A,B,C are subjects. Now let the higher level object which C could infer previously has 2 parts of data- partA and partB. Let partA has A in its reader set and partB has B but C is not there in any of them. Here both A and B cannot access the higher level data as each of them has C in their reader set and so violates the RWFM access rules. Thus C also is unable to get data resulting in prevention of undesirable data leak. It may be possible that C is present in reader set of either part of the higher level data. Let C is present in partA reader set and not in partB readerset. So both A and C can access data from partA as it does not violate RWFM rule but C cannot access partB as it still violates RWFM rules. Thus C cannot infer about the higher level data in this scenario as well.
+    
+
+\section{Implementation in PostGreSQL}
+\begin{itemize}
+    \item Each cell in a database is assigned a label (RWFM triplet).
+    \item Read / write on each cell is done based on the labels.
+    \item To implement RWFM model following changes are made in PostGreSQL source code :
+    \begin{enumerate}
+        \item A table named main\textunderscore table is created that has 4 attributes - user\textunderscore id, o\textunderscore attr, r\textunderscore attr, w\textunderscore attr. User \textunderscore id attribute stores each of the subjects and rest 3 attributes stores the corresponding RWFM triplet for the subject. It means r\textunderscore attr stores the reader set for subjects and w\textunderscore attr stores the writer set. 
+        \item Change in \textbf{CREATE} Statement 
+        \item Change in \textbf{INSERT} statement
+        \item Change in \textbf{SELECT} statement
+        \item Change in \textbf{UPDATE} statement
+    \end{enumerate}
+\end{itemize}
+
+%\subsection{Installation}
+
+\subsection{Create Statement}
+For each of the columns defined for a table in the create statement corresponding reader and writer sets are added in the following manner : 
+\begin{enumerate}
+    \item Each column defined in create statement is parsed. Changes are made in \textbf{gram.y} file “CreateStmt” portion. Location of gram.y is \textbf{src/backend/parser/gram.y}.
+    \item For each attribute say attr\textunderscore name new column nodes are created in gram.y named o\textunderscore attr \textunderscore name, r\textunderscore attr\textunderscore name and w\textunderscore attr\textunderscore name for owner, reader set and writer set. All of the new columns data type are “text”. 
+    \item While each column is parsed its name is added in a linked list. The linked list is traversed in “CreateStmt” in gram.y and  3 new column nodes for  each column are created and added to the \textbf{OptTableElementList}.
+\end{enumerate}
+
+Algorithm: 
+\begin{algorithm}[H]
+\caption{CREATE statement algorithm}
+\renewcommand{\algorithmicrequire}{\textbf{Inputs:}}
+\begin{algorithmic}[1]
+\REQUIRE $Q$ : query
+\ENSURE CREATE table 
+\STATE CREATE STATEMENT($Q$)  
+  \STATE Parse table element list of CreateStmt rule
+  \FOR{each column definition c in table element list}
+  \IF{c starts with "o\textunderscore" or "r\textunderscore" or "w\textunderscore"} 
+   \STATE throw error
+   \STATE break
+   \ELSE
+   \STATE Create column o\textunderscore  append c of type text
+   \STATE Create column r\textunderscore  append c of type text
+   \STATE Create column w\textunderscore  append c of type text
+   \STATE Add the new 3 columns to OptTableElementList
+   \ENDIF
+   \ENDFOR
+\end{algorithmic}
+\end{algorithm}
+
+
+\subsection{Insert Statement}
+data added to the table using insert statement is done in the     
+following manner :     
+\begin{enumerate}
+    \item For each  column say col\textunderscore name  mentioned in the insert statement list corresponding o\textunderscore col \textunderscore name, r\textunderscore col\textunderscore name and w\textunderscore col \textunderscore name are added in the same list. 
+    \item The o\textunderscore attr, r\textunderscore attr and w\textunderscore attr values from the main\textunderscore table of the subject that is inserting in the table are taken.
+    \item o\textunderscore, r\textunderscore attr and w\textunderscore attr values retrieved are given to the corresponding o\textunderscore col\textunderscore name, r\textunderscore col\textunderscore name and w\textunderscore col\textunderscore name in the insert statement.
+    \item Thus the tuple inserted by the subject has the same level initially as that of the subject itself. 
+\end{enumerate}
+
+Algorithm :
+\begin{algorithm}[H]
+\caption{INSERT statement algorithm}
+\renewcommand{\algorithmicrequire}{\textbf{Inputs:}}
+\begin{algorithmic}[1]
+\REQUIRE $Q$ : query
+\ENSURE INSERT data into table
+\STATE INSERT STATEMENT($Q$)  
+  \STATE Parse target list of InsertStmt rule
+ \FOR{each column definition c in target list}
+  \IF{c starts with "o\textunderscore" or "r\textunderscore" or "w\textunderscore" }
+   \STATE throw error
+   \STATE break
+   \ELSE 
+   \STATE Add column o\textunderscore append c to target list
+   \STATE Add column r\textunderscore append c target list
+   \STATE Add column w\textunderscore append c target
+   \STATE Select o\textunderscore attr, r\textunderscore attr and w\textunderscore attr from main\textunderscore table of current role
+   \STATE Add values to newly added columns sequentially
+   \ENDIF
+   \ENDFOR
+\end{algorithmic}
+\end{algorithm}
+
+
+\subsection{Select Statement}
+ Selection of tuples from the table for reading them is restricted to a subject in the following manner : 
+ \begin{enumerate}
+     \item Each of the column added in the select statement by the subject is parsed in gram.y and added to a linked list.
+     \item  In the SelectStmt portion of gram.y we make changes in \textbf{from\textunderscore clause}, \textbf{Opt\textunderscore targetelement\textunderscore list} and \textbf{where\textunderscore clause} list. In from\textunderscore clause “main\textunderscore table” is added along with the table from which data is to be read.
+     \item  In the opt\textunderscore targetelement\textunderscore list clause for each column col\textunderscore name corresponding R\textunderscore col\textunderscore name and w\textunderscore col\textunderscore name are added. Also r\textunderscore attr and w\textunderscore attr columns from Main\textunderscore table are also added .
+     \item  In the where clause for each column say col\textunderscore name corresponding r\textunderscore col\textunderscore name is added and is checked whether it contains the subject currently accessing in it or not using “LIKE” operator ( r\textunderscore col\textunderscore name LIKE “current\textunderscore user” ). Also join   Condition for the two tables (main\textunderscore table and the table in the select statement) is added which is (user\textunderscore id = current\textunderscore user );
+     \item Now each tuple is received in the \textbf{ExecutePlan} method of \textbf{execMain.c}. Each tuple is received one by one. In each tuple we have the values of each column mentioned in the select statement along with their corresponding reader and writer set. Also the o\textunderscore attr and w\textunderscore attr value of the subject accessing is also present. Now the read rules as mentioned in RWFM model is checked. If the Tuple values follow the rules then the tuple is printed else not.   
+ \end{enumerate}
+ \newpage
+Algorithm:
+\begin{algorithm}[H]
+\caption{SELECT statement algorithm}
+\renewcommand{\algorithmicrequire}{\textbf{Inputs:}}
+\begin{algorithmic}[1]
+\REQUIRE $Q$ : query
+\ENSURE desired data
+\STATE SELECT STATEMENT($Q$)  
+
+  \STATE Parse table element list of SelectStmt rule
+  \STATE Add main$\textunderscore$table to from$\textunderscore$clause
+ \FOR{each column definition c in Select element list}
+  \IF{c starts with o$\textunderscore$  or r$\textunderscore$ or w$\textunderscore$ }
+   \STATE throw error
+   \STATE break
+   \ELSE
+   \STATE Add column r$\textunderscore$ append c to  opt$\textunderscore$target$\textunderscore$list
+   \STATE Add column w$\textunderscore$ append c to opt$\textunderscore$target$\textunderscore$list
+   \STATE Add condition r$\textunderscore$ append c LIKE "current$\textunderscore$user" to where$\textunderscore$clause
+   \ENDIF
+  \ENDFOR
+  \STATE Add column r$\textunderscore$attr of main$\textunderscore$table to opt$\textunderscore$target$\textunderscore$list
+  \STATE Add column w$\textunderscore$attr of main$\textunderscore$ table to opt$\textunderscore$target$\textunderscore$list
+  \STATE Add condition o$\textunderscore$attr LIKE "current$\textunderscore$user" to where$\textunderscore$clause
+  \STATE Flag=0
+  \FOR{each column definition c in Select element list}
+  \IF{r$\textunderscore$attr $\subseteq$  r$\textunderscore$ append c  and w$\textunderscore$ append$\textunderscore$ c $\subseteq$ w$\textunderscore$attr }
+   \STATE continue
+   \ELSE
+    \STATE Flag=1
+   \STATE break
+  \ENDIF
+  \ENDFOR
+  \IF{Flag == 0 }
+   \STATE print all columns
+   \ELSE 
+    \STATE Do nothing
+    \STATE Flag=0
+ \ENDIF
+\end{algorithmic}
+\end{algorithm}
+
+
+
+\subsection{Update Statement}
+ Implementation of update statement is same as select 
+ Statement except that the writer set for each column is checked in where clause to Check whether the current subject is present in the writer set of the data to be Updated or not.   Corresponding reader and writer sets for each attribute can then be checked to see whether the updation rules are being followed or not according to RWFM model.  
+
+\newpage
+Algorithm :
+\begin{algorithm}[H]
+\caption{Update statement algorithm}
+\renewcommand{\algorithmicrequire}{\textbf{Inputs:}}
+\begin{algorithmic}[1]
+\REQUIRE $Q$ : query
+\ENSURE Update data
+\STATE UPDATE STATEMENT($Q$)  
+
+  \STATE Parse table element list of UpdateStmt rule
+  \STATE Add main$\textunderscore$table to from$\textunderscore$clause
+ \FOR{each column definition c in UpdateStmt list}
+  \IF{c starts with o$\textunderscore$  or r$\textunderscore$ or w$\textunderscore$ }
+   \STATE throw error
+   \STATE break
+   \ELSE
+   \STATE Add condition w$\textunderscore$ append c LIKE "current$\textunderscore$user" to where$\textunderscore$clause
+   \ENDIF
+  \ENDFOR
+  \STATE Add column r$\textunderscore$attr of main-table
+  \STATE Add column w$\textunderscore$attr of main$\textunderscore$ table
+  \STATE Add condition o$\textunderscore$attr LIKE 'current$\textunderscore$user' to where$\textunderscore$clause
+  \STATE Flag=0
+  \FOR{each column definition c in Select element list}
+  \IF{r$\textunderscore$ attr $\supseteq$ r$\textunderscore$ append c  and w$\textunderscore$ append c $\supseteq$ w$\textunderscore$attr }
+   \STATE continue
+   \ELSE
+    \STATE Flag=1
+   \STATE break
+  \ENDIF
+  \ENDFOR
+  \IF{Flag == 0 }
+   \STATE print all columns
+   \ELSE 
+    \STATE Do nothing
+    \STATE Flag=0
+ \ENDIF
+\end{algorithmic}
+\end{algorithm}
+
+
+
+\subsection{Upgradation/Downgradation of labels}
+
+The levels for each column say column\textunderscore name as r\textunderscore column\textunderscore name and w\textunderscore column\textunderscore name can be updated according to the RWFM rules mentioned below. All the conditions are checked in the where clause list. 
+
+\subsubsection{Downgrade Rule}
+If a subject s with label (s1,R1,W1) requests to downgrade object o with label (s2,R2,W2) to label (s3,R3,W3) 
+
+\begin{algorithm}[H]
+\caption{Downgrade Level}
+\renewcommand{\algorithmicrequire}{\textbf{Inputs:}}
+\begin{algorithmic}[1]
+\REQUIRE $Q$ : query
+\ENSURE change in label
+\STATE Downgrade Level($Q$) 
+ \IF{(s1 = s2 = s3) and (s1 $\epsilon$ R2 )and( W1 = W2 = W3) and (R2 = R1)and(R3 $\supseteq$ R2) }
+  \IF{(W1 = s) or (R3 - R2 $\subseteq$ W2) then 
+    \STATE $\lambda$(o) = (s3,R3,W3)}
+   \STATE Allow
+   \ELSE 
+   \STATE deny
+   \ENDIF
+  \ELSE 
+  \STATE deny
+  \ENDIF
+\end{algorithmic}
+\end{algorithm}
+
+
+
+\subsubsection{Upgrade Rule} 
+
+If a subject s with label (s1,R1,W1) requests to upgrade object o with label (s2,R2,W2) to label (s3,R3,W3)
+
+\begin{algorithm}[H]
+\caption{Upgrade Level}
+\renewcommand{\algorithmicrequire}{\textbf{Inputs:}}
+\begin{algorithmic}[1]
+\REQUIRE $Q$ : query 
+\ENSURE Upgradation or not
+\STATE Upgrade Level($Q$)
+\IF{s1 = s2 = s3 and  s1 $\epsilon$ R2  and  W1 $\subseteq$ W2 and W3 = W1 $\cup$ s and R3 $\subseteq$ R1 $\subseteq$ R2 }
+   \STATE $\lambda$ $($o$)$ = $($s3;R3;W3$)$ \\
+    \STATE Allow
+    \ELSE
+   \STATE deny
+  \ENDIF
+ 
+\end{algorithmic}
+\end{algorithm}
+
+
+
+New rules have been defined for upgrade / downgrade of levels. The rules are then converted to original rules that comply with PostGreSQL statements. Restriction is that level of only one cell data can be changed at a time. 
+
+Downgrade rule : \textbf{Downgrade $<$column-name$>$ from $<$table-name$>$ add $<$subject-name$>$}\\
+
+This is modified as : \\
+Update $<$table-name$>$ set $<$column-name$>$ = $<$column-name$>$ $||$ $<$subject-name$>$  where $<$column-name$>$ = (select o\textunderscore attr from main\textunderscore table where user\textunderscore id = current\textunderscore user ) and w\textunderscore$<$column-name$>$ = (select w\textunderscore attr from main\textunderscore table where user\textunderscore id = current\textunderscore user ) and w\textunderscore$<$column-name$>$ like '$<$\%subject-name\%$>$'; \\[2em]
+
+Upgrade rule : \textbf{Upgrade $<$column-name$>$ from $<$table-name$>$ remove $<$subject-name$>$ }  \\
+This is modified as : \\
+Update table1 set r\textunderscore $<$column-name$>$ = regexp\textunderscore replace( r\textunderscore$<$column-name$>$,  $<$subject-name$>$ ,'') where o\textunderscore $<$column-name$>$ = (select o\textunderscore attr from main\textunderscore table where user\textunderscore id = current\textunderscore user) and w\textunderscore $<$column-name$>$ = (select w\textunderscore attr from main\textunderscore table where user\textunderscore id = current\textunderscore user  ) and r\textunderscore $<$column-name$>$ like '\%$<$subject-name$>$\%'; 
+
+
+\subsection { Advantages and Disadvantages}
+\subsubsection{Advantages}
+\begin{itemize}
+    \item More secured : The limitations of the previous 2 models is overcome by RWFM model as access rules are defined as such that no user can infer about higher level data by combining 2 or more low level data from different sources.
+    \item Speed not fully compromised : for read/ write of a data from database by a subject we first of all check whether the subject is present in  the reader set or writer set of the data respectively. Then we do the rest processing of the data. This saves a lot of execution time than expected as there can be lot of data in the database that do not need to be retrieved in the first instance as the subject executing the query is not present either in the reader set or the writer set for reading and writing respectively. 
+    \item Easy manipulation of labels. Labels in a data can be easily upgraded or downgraded complying with security properties as we have already seen.
+\end{itemize}
+\subsubsection{Disadvantages}
+
+\begin{itemize}
+    \item Extra space : Extra levels need to be added for each data in cell in the database.  
+    \item Subject labels must be fixed: RWFM triplet for a subject once defined cannot be changed in RWFM model. Otherwise it would lead to inconsistencies.
+\end{itemize}
+
+In general we can say that the increase in space and time complexity can be ignored as the implementation makes data more secured than other models and owing to the fact that security of data is very important.
+\chapter{Other Security features}
+\section{Sanitization}
+Sanitization is the process of removing sensitive information from a document or other message (or sometimes encrypting it), so that the document may be distributed to a broader audience. Sanitization is very important in data present in database as well. To illustrate it in details lets see an example : 
+
+Suppose there is a student database of marks achieved by students from various schools around the country. Let the database simply be:\\
+\textbf{Student\textunderscore details(name,roll\textunderscore no,age,school,address,marks)}\\
+Now if someone is willing to make statistics of marks distribution from the database, he/she should not have access to the name and roll number of students  as they are private information for the student and students would not like to reveal their marks with their identity. Now suppose someone wishes to find out the average of all students of a particular city. In that case the person must have access to address column of the database. Here the problem is if the whole address is given to the person it is same as giving the identity of the student. The whole address can be easily used to identify a student. Suppose address of a student is "Hiranandani, Powai, Mumbai, Maharashtra". It is a sensitive data as students identity can be gained from it. In order to get average of marks in city the second half of the address i.e, "Mumbai,Maharashtra" is sufficient. Taking only this information makes inference of identity of student less obvious. So we need to reduce a sensitive data ("Hiranandani, Powai, Mumbai, Maharashtra") to less sensitive data ("Mumbai,Maharashtra"). This process is known as Sanitization. In many cases different copies of the same tuple are made based on sensitivity i.e, in this case we can say there will be two tuples for a student with one having address ("Hiranandani, Powai, Mumbai, Maharashtra") and other having ("Mumbai,Maharashtra"). Now classification levels are given to the tuples based on which they are accessed. This feature is good only when the database is managing information from different sources and different data where a general form of sanitization procedure cannot be followed. The only drawback is it leads to storage of large amount of redundant data which is undesirable in many cases. 
+In database systems that manages data related to a particular organization or particular area, sanitization can be implemented without adding redundant data to the database thus saving space. Only a small drawback is that sanitization process consumes some time while retrieving data from each tuple. 
+
+
+\section{Preventing repetitive aggregate function use}
+Some users may require aggregates of data in a database which is relevant to them. Giving access to each data in order to find aggregates may be undesirable as individual data may be quiet sensitive. We have discussed examples of such cases before in chapter 2 section 3. So the user is given access to only aggregate functions in the database and not on the individual values. But in many cases user can infer values  with the help of aggregate functions to some extent. Lets see a very simple example. Suppose a user A is given access to find the sum and count of values of a particular column in a database. Meanwhile when the user is calculating the sum some other authorized user or users B may be inserting data into the same column. Now if user A repetitively calculates the sum and count of values he will find the new value currently inserted into the database using very simple mathematics. This is undesirable as even though use A is not permitted to access the values in the column still he can get them. To prevent it we must enforce condition of preventing repetitive use of aggregate function. 
+\subsection{Implementation} 
+Simple approach is to use logs. For each user who has access to aggregate functions whenever they access data from the database, name of the user and current timestamp can be logged in a file. So whenever the user tries to access the database again the log can be checked to see their last access. If the difference between the last access and the current access is permissible then the user can get the desired output else no output is shown.
+Algorithm: 
+\begin{algorithm}[H]
+\caption{Prevent Repetitive Aggregate Function Use}
+\renewcommand{\algorithmicrequire}{\textbf{Inputs:}}
+\begin{algorithmic}[1]
+\REQUIRE $Q$ : query\\ $TH$:  threshold
+\ENSURE QUERY RESULT
+\STATE Check\textunderscore Repetition($Q$,$TH$)
+\FOR{each user\textunderscore name u  in log L}
+\IF{(Current\textunderscore user == u)}
+ \IF{(Current\textunderscore timestamp - last\textunderscore timestamp[u] $>$ threshold)}
+ \STATE Send the output to the user
+ \STATE Update last\textunderscore timestamp[u] $\leftarrow$ current\textunderscore timestamp
+ break
+ \ELSE 
+ \STATE Update last\textunderscore timestamp[u]  $\leftarrow$ current\textunderscore timestamp
+ \ENDIF
+ \ENDIF
+ \ENDFOR
+\end{algorithmic}
+\end{algorithm}
+
+\chapter{Conclusion and Future Scope}
+There are 3 database security models discussed in the report : 
+\begin{itemize}
+    \item Security with Fine Grained Access Control(FGAC)
+    \item Security by creating views 
+    \item Security by implementing RWFM model 
+\end{itemize}
+After understanding all of them we can conclude that RWFM model has the best Security features among them. Still there are some disadvantages of RWFM model as mentioned beforehand which must be overcome in future. The overhead of storing extra attributes is does not affect much compared to the security feature it provides. \\[2em]
+Here I list of the of the things that has to be done in future for implementing better security in multilevel database. 
+\begin{itemize}
+    \item Creating a security model where levels of subject can also change which is a disadvantage of RWFM model.
+    \item Current Implementation deals with the basic SQL queries like CREATE, INSERT, DELETE, UPDATE, SELECT and VIEW. There are other functionality in SQL as  transaction, concurrency ,etc. where security needs to be implemented.
+    \item Also functionality to handle triggers must be included as triggers play a vital role in database management. 
+\end{itemize}
+%\bibliographystyle{unsrt}
+%\bibliography{sample}
+ \begin{thebibliography}{10}
+    
+  %\beamertemplatebookbibitems
+  % Start with overview books.
+
+ 
+ 
+    
+  % Followed by interesting articles. Keep the list short. 
+
+  \bibitem{Someone2000}
+    Rakesh Agrawal, Paul Bird, Tyrone Grandison, Jerry Kiernan, Scott Logan, Walid Rjaibi.
+    \newblock Extending Relational Database Systems to Automatically Enforce Privacy Policies.
+    \newblock {\em 21st International Conference on Data Engineering (ICDE'05)}
+    \bibitem{Someone2001}
+     Dorothy E Denning, Selim G. Akl, Mark Heckman, Teresa F. Lunt, Metthew Morgenstern, Peter G. Neumann and Roger R. Schell.
+    \newblock Views for Multilevel Database Security.
+    \newblock {\em IEEE TRANSACTIONS ON SOFTWARE ENGINEERING, VOL. SE-13, NO. 2, FEBRUARY 1987}
+    
+    \bibitem{Someone2002}
+    N.V.Narendra Kumar and R.K.Shyamasundar .
+    \newblock Realizing Purpose-Based Privacy Policies Succinctly via Information-Flow Labels.
+    \newblock {\em Big Data and Cloud Computing (BdCloud), 2014 IEEE Fourth International Conference on 3-5 Dec, 2014}
+  
+  \end{thebibliography}
+\end{document}

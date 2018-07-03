@@ -1,0 +1,25 @@
+\chapter{RELATED WORK}
+
+\begin{table}[!ht]
+\caption{Comparison Analysis of Security Testing Tools}
+\label{Comparitive Analysis of Security Testing Tools}
+\begin{tabular}{|l|l|l|l|l|}
+\hline
+Features                 & Our Framework & BioFuzz       & MBVT Tool    & WebMate       \\
+\hline
+Model of the tool        & State Machine & State Machine & UML Diagrams & State Machine \\
+\hline
+Fuzzing based Technique  & Yes           & Yes           & No          & Yes           \\
+\hline
+XSS Testing              & Yes           & No            & Yes          & No            \\
+\hline
+SQLI Testing             & Yes           & Yes           & Yes           & No            \\
+\hline
+Headless Browser support & Yes           & Yes           & Yes           & No            \\
+\hline
+Automation               & Yes           & Yes           & Yes          & Yes\\
+\hline
+\end{tabular}
+\end{table}
+
+We have compared our approach with Webmate[1], Biofuzz[3], MBVT Tool[2]. Webmate is a functional testing tool based on model based testing approach without security attributes testing. MBVT Tool uses UML Diagrams as a modelling technique which required generation of UML diagrams based on functional specification. Our tool generates a model without functional specifications. BioFuzz is a search based testing tool which tests only SQL Injection attacks without XSS Testing support. Our tool also performs XSS Testing. Table 9.1 illustrates the comparative analysis of our tool with other model based security testing tools. Apart from these tools there are other tools like SQLMap which tests only for SQL Injection attack. All the tools used fuzzing based technique for generation of testcases with the exception of MBVT.

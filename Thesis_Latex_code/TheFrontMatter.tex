@@ -1,0 +1,162 @@
+% This file contains the templates for the first few pages of the thesis including 
+% 1. Title page
+% 2. Dedication
+% 3. Dissertation approval
+% 4. Declaration of authorship
+% 5. Abstract
+
+
+%   1. TITLE
+\newcommand{\titlePage}{
+
+% No page number
+\thispagestyle{empty}
+\begin{center}
+% thesis title
+\vspace*{15px}
+{\Huge\bfseries \thesisTitle}\\[1.0cm] 
+
+% submitted in partial fulfillment etc.
+%\text{M. Tech. Dissertation}
+
+\textit{Submitted in partial fulfillment of the requirements of the degree of\\[0.2cm] \degree}\\[1.0cm]
+ 
+% author
+\textit{by}\\[0.2cm]
+\authorName \\[0.2cm] \textit{\textbf{Roll no.}} \rollNo \\[2.0cm]
+
+% supervisor
+\textit{Supervisor:}\\[0.2cm]
+% or
+% \textit{under the supervision of}\\[0.2cm]
+\supervisorOne \\[2.0cm]
+
+% iit-b logo
+\includegraphics[width=0.25\textwidth]{iitb_logo.jpg}
+
+\vspace*{5px}
+% department and college
+\dept\\
+\college\\
+% year
+\currentyear\\[0.1cm] 
+\end{center}
+\clearpage
+}
+%   2. DEDICATION
+%\newcommand{\dedication}{
+%\thispagestyle{empty}
+%\vspace*{75px}
+%\begin{center}\large{\textit{Dedicated to ...}}\end{center}
+
+%\clearpage
+%}
+%   3. DISSERTATION APPROVAL
+
+\newcommand{\approval}{
+% if you use a dedication, then use a page number with the plain page style
+\thispagestyle{plain}
+% else, use no page number with the empty page style
+%\thispagestyle{empty}
+
+
+% page title
+\begin{center}{\huge\bf Dissertation Approval\par}\end{center}
+
+\vspace*{15px}
+
+\noindent This project report entitled 
+% title
+\textbf{``\thesisTitle"}, submitted by 
+% author
+\authorName ~(Roll No.  \rollNo), is approved for the award of degree of 
+% degree
+\degree 
+~in 
+% branch
+Computer Science \& Engineering.\\[1.0cm]
+% examiners and supervisors
+\vspace*{35px}
+\begin{center}
+\rule{150pt}{2pt}\\
+\textbf{Prof. R.K. Shyamasundar}\\
+Dept. of CSE, IIT Bombay\\
+Supervisor\\[1.5cm]
+\end{center}
+\vspace*{10px}
+\noindent \rule{150pt}{2pt} \hfill \rule{150pt}{2pt}\\
+\textbf{Prof. G. Sivakumar} \hfill \textbf{Prof. Bernard L. Menezes}\\
+Dept. of CSE, IIT Bombay \hfill Dept. of CSE, IIT Bombay\\
+External and Internal Examiner \hfill Internal Examiner\\[1.0cm]
+
+\vspace*{30px}
+\noindent \textbf{Date:} ...... \currentmonth { } \currentyear\\[0.3cm]
+\textbf{Place:}\quad\rule{0.4\textwidth}{.3pt} 
+
+% start a new page
+\clearpage
+}
+
+%   4. DECLARATION OF AUTHORSHIP
+\newcommand{\authorship}{
+\thispagestyle{plain}
+
+\begin{center}{\huge\bf Declaration of Authorship\par}\end{center}
+
+\vspace*{15px}
+
+% institute declaration text
+\noindent I declare that this written submission represents my ideas in 
+my own words and where others' ideas or words have been included, I have adequately cited and 
+referenced the original sources.  I also declare that I have adhered to all principles of academic 
+honesty and integrity and   have   not   misrepresented   or   fabricated   or   falsified   
+any   idea/data/fact/source   in   my submission.  I understand that any violation of the above 
+will be cause for disciplinary action by the Institute and can also evoke  penal action from the 
+sources which have thus not been properly cited or from whom proper permission has not been taken when needed.
+
+\vspace*{15px}
+
+% signature
+\begin{flushright}
+{Signature: ......................................\\[0.4cm]}
+
+% author name
+{\textbf{\authorName}\\[0.0cm]\rollNo\\[2.0cm]}
+
+\end{flushright}
+% date
+\begin{flushleft}
+{Date: ...... \currentmonth { } \currentyear\\}
+\end{flushleft}
+
+
+% start a new page
+\clearpage 
+}
+
+%   5. ABSTRACT
+\newcommand{\abstractpage}{
+\thispagestyle{plain}
+
+% header-type text for the abstract - optional
+% \small {\noindent\authorName/ \supervisorOne{ }(Supervisor): \textbf{``\thesisTitle"}, \textit{MTech Project}, \dept, \college, \currentmonth { } \currentyear.}\\[0.0cm]
+% \HRule\\[0.2cm]
+
+
+% \vspace*{10px}
+
+\begin{center}{\huge{\textit {Abstract}}\par}\end{center}
+
+\vspace*{10px}
+
+% Abstract text - Type abstract here
+
+Testing of web applications would have become manageable if we had a functional specification of web applications. Due to the underlying issues with browsers and applications being patched regularly it is almost impossible to set realistic functional specifications and system specifications. Thus, vulnerability scanners to test web security will result in false positives, or false negatives. The above disadvantages can be circumvented by model-based testing approach. In this dissertation, we propose a method for web application security using model-based testing approach. The proposed method has been implemented and tested. Model-based testing approach is adapted as it is easy to automate the testing process, and adaptive to changes. Some of the modelling tools like WebSphinx, and PHP-Crawler generate a model based on the static elements in web page. Modern web applications are dynamic in nature due to AJAX technology. Our approach, uses crawljax, a open source modelling tool, and generates a model based on dynamic event handler, then generates test cases for security based on the model of the web application, and execute them in a browser to validate the model for security vulnerabilities. Our case study of DVWA-Damn Vulnerable Web Application that contains security vulnerabilities has shown advantages of our tool approach. We have performed experiments with our test framework in a sample space of 15 web applications. We opine that our testing tool is capable of capturing security vulnerabilities like XSS and SQL Injection in the tested web applications in an automated manner.
+
+
+% Index terms
+% \noindent \textbf{Index terms}: Sentiment 
+
+% Start a new page
+\clearpage 
+}

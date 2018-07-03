@@ -1,0 +1,237 @@
+\chapter{EXPERIMENTAL RESULTS}
+
+In this chapter, we shall highlight the results of security vulnerabilities on various web applications. 
+
+\section{Case Study Coverage- DVWA Web Application}
+
+Let us consider a case study of web application named Damn Web Vulnerable Web Application for our Model Based Security Testing Approach.
+
+DVWA-Damn Web Vulnerable Application is a PHP/MySQL application which contains security vulnerabilities such as SQL Injection, Reflected XSS and Stored XSS Attacks. There are three security levels - low, medium and high with decreasing order or security vulnerabilities across the levels. The framework is tested against DVWA tools across the security levels.
+\\
+The below figure depicts the Damn Vulnerable Web Application\\
+\newpage
+\begin{figure}[!h]
+ \begin{center}
+    \resizebox{100mm}{75mm} {\includegraphics {Chapters/DVWA1.eps}}
+    \caption {State Machine Model of DVWA}
+  \label{fig:Table}
+ \end{center}
+\end{figure}
+
+
+\section{State Machine Model of DVWA web application}
+
+The first phase of our case study is to generate a state machine model for Web application. The Figure 8.1 illustrates the state machine model generated for the application DVWA for crawl level 1. Also the number of states and their url is depicted in the Table 8.1
+
+\begin{figure}[!h]
+ \begin{center}
+    \resizebox{100mm}{75mm} {\includegraphics {Chapters/DVWA.eps}}
+    \caption {State Machine Model of DVWA}
+  \label{fig:Table}
+ \end{center}
+\end{figure}
+
+\begin{table}[!h]
+\centering
+\caption{State Generated in Model}
+\label{State Generated in Model}
+\begin{tabular}{||c | c||}
+\hline
+/dvwa/vulnerabilities/sqli/                & state9,  \\
+/dvwa/vulnerabilities/sqli/                & state9,  \\
+/dvwa/vulnerabilities/csrf/                & state6,  \\
+/dvwa                                      & index,   \\
+/dvwa/vulnerabilities/exec/                & state5,  \\
+/dvwa/vulnerabilities/fi/?page=include.php & state8,  \\
+/dvwa/vulnerabilities/captcha/             & state7,  \\
+/dvwa/instructions.php                     & state2,  \\
+/dvwa/vulnerabilities/brute/               & state4,  \\
+/dvwa/setup.php                            & state3,  \\
+/dvwa/vulnerabilities/xss\_s/              & state13, \\
+/dvwa/vulnerabilities/xss\_r/              & state12, \\
+/dvwa/vulnerabilities/upload/              & state11, \\
+/dvwa/vulnerabilities/sqli\_blind/         & state10, \\
+/dvwa/login.php                            & state17, \\
+/dvwa/about.php                            & state16, \\
+/dvwa/phpinfo.php                          & state15, \\
+/dvwa/security.php                         & state14 \\
+\hline
+
+\end{tabular}
+\end{table}
+
+\newpage
+
+\section{Points of vulnerability identified from Model}
+
+The second phase of our automated test tool is identifying the points of vulnerability from the model. 
+It is done by analyzing the  state machine model and by parsing the DOM Tree for parameters which require user inputs(GET/POST parameters) form fields, hidden inputs, parameters than can be modified. These parameters are identified as target parameters which are vulnerable for security attacks.
+
+\newline
+\textbf{Vulnerability fields for XSS and SQL Injection}
+
+\newline
+\textbf{State9}
+
+$<input name="id" type="text"/>$
+
+$<input name="Submit" type="submit" value="Submit"/>$
+
+\newline
+\textbf{State17}
+
+ $<input class="loginInput" name="username" size="20" type="text"/>$
+
+ $<input autocomplete="off" class="loginInput" name="password" size="20" type="password"/>$
+
+ $<input name="Login" type="submit" value="Login"/>$
+
+\newline
+\textbf{State13}
+
+$<input maxlength="10" name="txtName" size="30" type="text"/>$
+
+$<input name="btnSign" onclick="return checkForm();" type="submit" value="Sign Guestbook"/>$
+
+
+\newline
+\textbf{State10}
+
+$<input name="id" type="text"/>$
+
+$<input name="Submit" type="submit" value="Submit"/>$
+
+\newline
+\textbf{State4}
+
+$<input name="username" type="text"/>$
+
+$<input autocomplete="none" name="password" type="password"/>$
+
+$<input name="Login" type="submit" value="Login"/>$
+
+\newline
+\textbf{State11}
+
+$<input name="MAX$\_$FILE$\_$SIZE" type="hidden" value="100000"/>$
+
+$<input name="uploaded" type="file"/>$
+
+$<input name="Upload" type="submit" value="Upload"/>$
+
+
+\newline
+\textbf{State7}
+
+$<input name="step" type="hidden" value="1"/>$
+
+$<input autocomplete="none" name="password$\_$new" type="password"/>$
+
+ $<input autocomplete="none" name="password$\_$conf" type="password"/>$
+
+ $<input name="Change" type="submit" value="Change"/>$
+
+
+\newline
+\textbf{State5}
+
+$<input name="ip" size="30" type="text"/>$
+
+$<input name="submit" type="submit" value="submit"/>$
+
+\newline
+\textbf{State6}
+
+$<input autocomplete="none" name="password$\_$new" type="password"/>$
+
+$<input autocomplete="none" name="password$\_$conf" type="password"/>$
+
+$<input name="Change" type="submit" value="Change"/>$
+ 
+\newline
+\textbf{State12}
+
+$<input name="name" type="text"/>$
+
+$<input type="submit" value="Submit"/>$
+
+\newline
+\textbf{State3}
+
+$<input name="create$\_$db" type="submit" value="Create / Reset Database"/>$
+
+\newline
+\textbf{State14}
+
+$<input name="seclev$\_$submit" type="submit" value="Submit"/>$
+
+\section{Validation Results of execution in Browser}
+
+The final phase of our tool is presenting the results of execution to the user in a html report. Below are the results of our tool for XSS and SQL Injection security testing.
+
+\newline
+\textbf{XSS and SQL Injection Test Results}
+\newline
+\\
+\textbf{State11: }
+\newline
+No candidate elements for Reflected and stored XSS vulnerability
+\newline
+No candidate elements for SQL Injection 
+\newline
+\\
+\textbf{State10: }
+\newline
+No Reflected XSS and stored Vulnerability not found for script
+\newline
+\textbf{SQL Injection Vulnerability found for payload\\ 
+$ 1 UNION ALL SELECT 1,2,3,4,5,6,name FROM sysObjects WHERE xtype = \'U\' -- $}
+\newline
+\\
+\textbf{State14: }
+\newline
+No Reflected XSS and stored Vulnerability not found for script
+\newline
+\textbf{SQL Injection Vulnerability found for payload 
+\\
+$1 AND USER$\_$NAME() = 'usr' $}
+\newline
+\textbf{State9: }
+\newline
+No Reflected and stored XSS Vulnerability not found for script
+\newline
+\textbf{SQL Injection Vulnerability found for payload 
+\\
+$1 AND ASCII(LOWER(SUBSTRING((SELECT TOP 1 name FROM sysobjects$
+\\$WHERE xtype='U'), 1, 1))) > 116 $}
+\newline
+\\
+\textbf{State12:} 
+\newline
+textbf{Payload Reflected in Response. Reflected XSS Vulnerability found for script
+\\ $<SCRIPT SRC=http://ha.ckers.org/xss.js></SCRIPT>$}
+\newline
+\\
+\textbf{State13: }
+\textbf{Payload loaded from web application. Stored XSS Vulnerability found
+\\$'-alert(3)-'$}
+
+\section{Inference of results from Case Study of DVWA web application}
+The DVWA application contains security vulnerabilities like XSS and SQL Injection. Our Test Framework identifies the security vulnerabilities of the web application correctly and identifies which parameters are vulnerable which aids for web developers to correct the security flaws. An exhaustive testing of web application with numerous payloads are tedious to execute by manual testing and also hidden parameters can be overlooked in manual testing. Our tool aids in overcoming these drawbacks and our case study demonstrates our tool usage in security testing.
+
+\begin{table}[h]
+\label{Summary of Web Application Tested - DVWA}
+\caption{Summary of Web Application Tested - DVWA}
+\begin{tabular}[h]{||c | c||}
+\hline
+Number of states tested                    & 10  \\
+Crawl Level configuration                   & 1  \\
+Number of elements identified for testing   & 30  \\
+Number of elements found vulnerable        & 5 \\
+Types of vulnerabilities found             & SQLI, Reflected XSS, Stored XSS  \\
+Types of vulnerabilities not found    & CSRF, File Inclusion   \\
+\hline
+
+\end{tabular}
+\end{table}
+Vulnerabilities other than XSS and SQLI like CSRF, File Inclusion are not found as they are beyond scope of our thesis.
