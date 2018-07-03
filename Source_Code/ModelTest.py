@@ -221,7 +221,7 @@ def reflected_xsstest(Test_script, url):
 
 	fs.close();
 
-	fp=open("output/"+"report.txt", "a+")
+	fp=open("output/"+"summary.txt", "a+")
 
 	fp.write("<b>State: " + url + "</b> \n")
 
@@ -355,6 +355,7 @@ def storedxsstest(Test_script, url):
 		else:
 			#print("Not Entered Logic")
 			print "No stored XSS Vulnerability not found for script" + "<xmp>" + Test_script.strip() + "</xmp>"
+			fs.write("No stored XSS Vulnerability not found for script" + "<xmp>" + Test_script.strip() + "</xmp>" + "</xmp>"+"\n")
 
 	fs.close()
 			
